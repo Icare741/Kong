@@ -17,7 +17,9 @@ app.post('/login', async (req, res) => {
     // Pour l'exemple, nous utilisons des valeurs en dur
     if (username === 'admin' && password === 'password') {
         const token = jwt.sign(
-            { username },
+            { 
+                iss: 'JLbR2F67dntj0dx1SH0CVG2VX5CIlc04'  // La "key" de notre credential JWT dans Kong
+            },
             process.env.JWT_SECRET || 'votre_secret_jwt',
             { expiresIn: '1h' }
         );

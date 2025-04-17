@@ -54,6 +54,18 @@ services:
     depends_on:
       - kong
 
+  auth-db:
+    image: postgres:13
+    container_name: auth-db
+    environment:
+      POSTGRES_USER: auth
+      POSTGRES_DB: auth
+      POSTGRES_PASSWORD: authpass
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
   auth-service:
     build: ./auth-service
     container_name: auth-service
@@ -61,8 +73,25 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - JWT_SECRET=6g5X8esCdIIuhcvwkuASQAGGCNyflapWja98//0h8tY=
+      - DB_HOST=auth-db
+      - DB_USER=auth
+      - DB_PASSWORD=authpass
+      - DB_NAME=auth
+    depends_on:
+      - auth-db
+      - kong
+
+  products-service:
+    build: ./products-service
+    container_name: products-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
     depends_on:
       - kong
 
 volumes:
-  kong_data: 
+  kong_data:
+  auth_data: 
