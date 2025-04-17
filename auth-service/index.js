@@ -38,7 +38,7 @@ app.post('/auth/register', async (req, res) => {
         // Créer le nouvel utilisateur
         const result = await pool.query(
             'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email',
-            [email, password] // Note: Dans un cas réel, il faudrait hasher le mot de passe
+            [email, password]
         );
         
         res.status(201).json({
@@ -52,6 +52,7 @@ app.post('/auth/register', async (req, res) => {
 });
 
 app.post('/auth/login', async (req, res) => {
+    console.log('Tentative de connexion:', req.body);
     const { email, password } = req.body;
     
     try {
@@ -61,17 +62,22 @@ app.post('/auth/login', async (req, res) => {
         );
         
         if (result.rows.length === 0) {
+            console.log('Identifiants invalides pour:', email);
             return res.status(401).json({ message: 'Identifiants invalides' });
         }
         
+        const user = result.rows[0];
         const token = jwt.sign(
             { 
-                iss: 'JLbR2F67dntj0dx1SH0CVG2VX5CIlc04'  // La "key" de notre credential JWT dans Kong
+                iss: 'JLbR2F67dntj0dx1SH0CVG2VX5CIlc04',
+                sub: user.id,
+                email: user.email
             },
-            process.env.JWT_SECRET || 'votre_secret_jwt',
+            process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
         
+        console.log('Connexion réussie pour:', email);
         res.json({ token });
     } catch (error) {
         console.error('Erreur lors de la connexion:', error);
@@ -87,7 +93,7 @@ app.post('/auth/verify', (req, res) => {
     }
     
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'votre_secret_jwt');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         res.json({ valid: true, user: decoded });
     } catch (error) {
         res.status(401).json({ message: 'Token invalide' });

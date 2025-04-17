@@ -33,22 +33,6 @@ services:
     depends_on:
       - kong
 
-  # Service d'authentification
-  auth-service:
-    build: ./auth-service
-    container_name: auth-service
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - JWT_SECRET=votre_secret_jwt
-      - DB_HOST=auth-db
-      - DB_USER=auth
-      - DB_PASSWORD=authpass
-      - DB_NAME=auth
-    depends_on:
-      - auth-db
-
   # Base de données pour le service d'authentification
   auth-db:
     image: postgres:13
@@ -62,6 +46,28 @@ services:
       - ./auth-service/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Service d'authentification
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - JWT_SECRET=6g5X8esCdIIuhcvwkuASQAGGCNyflapWja98//0h8tY=
+      - DB_HOST=auth-db
+      - DB_USER=auth
+      - DB_PASSWORD=authpass
+      - DB_NAME=auth
+    depends_on:
+      auth-db:
+        condition: service_healthy
 
   # Service des produits
   products-service:

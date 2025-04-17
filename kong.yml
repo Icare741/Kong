@@ -44,6 +44,16 @@ services:
             - exp
           secret_is_base64: false
 
+consumers:
+  - username: default
+    custom_id: default-user
+
+jwt_secrets:
+  - consumer: default
+    key: "JLbR2F67dntj0dx1SH0CVG2VX5CIlc04"
+    secret: "6g5X8esCdIIuhcvwkuASQAGGCNyflapWja98//0h8tY="
+    algorithm: HS256
+
 plugins:
   - name: cors
     config:
