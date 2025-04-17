@@ -10,21 +10,21 @@ services:
         methods:
           - POST
           - OPTIONS
-        strip_path: true
+        strip_path: false
       - name: login-route
         paths:
           - /auth/login
         methods:
           - POST
           - OPTIONS
-        strip_path: true
+        strip_path: false
       - name: verify-route
         paths:
           - /auth/verify
         methods:
           - POST
           - OPTIONS
-        strip_path: true
+        strip_path: false
 
   - name: products-service
     url: http://products-service:3001

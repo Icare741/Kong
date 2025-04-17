@@ -1,11 +1,6 @@
-FROM node:18-slim
+FROM node:18-alpine
 
 WORKDIR /app
-
-# Installation des dépendances nécessaires
-RUN apt-get update && \
-    apt-get install -y python3 make g++ && \
-    rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
 
@@ -13,6 +8,9 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3000
+# Attendre que la base de données soit prête
+RUN apk add --no-cache postgresql-client
+COPY wait-for-postgres.sh /wait-for-postgres.sh
+RUN chmod +x /wait-for-postgres.sh
 
-CMD ["node", "index.js"] 
+CMD ["/wait-for-postgres.sh", "auth-db", "5432", "node", "index.js"] 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { login } from '../services/auth';
+import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
 import {
   Container,
   Paper,
@@ -8,21 +9,22 @@ import {
   Typography,
   Box,
   Alert,
+  Link,
 } from '@mui/material';
 
-const Login = ({ onLoginSuccess }) => {
-  const [credentials, setCredentials] = useState({
+const Login = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCredentials(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -30,10 +32,10 @@ const Login = ({ onLoginSuccess }) => {
     setError('');
 
     try {
-      const response = await login(credentials);
-      onLoginSuccess(response);
+      await authService.login(formData.email, formData.password);
+      navigate('/dashboard');
     } catch (error) {
-      setError('Identifiants invalides');
+      setError(error.message);
     }
   };
 
@@ -47,8 +49,8 @@ const Login = ({ onLoginSuccess }) => {
           alignItems: 'center',
         }}
       >
-        <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
+        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
+          <Typography component="h1" variant="h5" align="center">
             Connexion
           </Typography>
           
@@ -58,7 +60,7 @@ const Login = ({ onLoginSuccess }) => {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <TextField
               margin="normal"
               required
@@ -68,7 +70,7 @@ const Login = ({ onLoginSuccess }) => {
               name="email"
               autoComplete="email"
               autoFocus
-              value={credentials.email}
+              value={formData.email}
               onChange={handleChange}
             />
             <TextField
@@ -80,7 +82,7 @@ const Login = ({ onLoginSuccess }) => {
               type="password"
               id="password"
               autoComplete="current-password"
-              value={credentials.password}
+              value={formData.password}
               onChange={handleChange}
             />
             <Button
@@ -91,7 +93,16 @@ const Login = ({ onLoginSuccess }) => {
             >
               Se connecter
             </Button>
-          </form>
+            <Box sx={{ textAlign: 'center' }}>
+              <Link
+                component="button"
+                variant="body2"
+                onClick={() => navigate('/register')}
+              >
+                Pas encore de compte ? S'inscrire
+              </Link>
+            </Box>
+          </Box>
         </Paper>
       </Box>
     </Container>

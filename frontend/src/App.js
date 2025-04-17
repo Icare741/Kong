@@ -1,37 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Register from './components/Register';
 import Login from './components/Login';
-import Products from './components/Products';
-import { isAuthenticated, logout } from './services/auth';
-
-const theme = createTheme();
+import Dashboard from './components/Dashboard';
+import { authService } from './services/authService';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const isAuthenticated = () => {
+        const token = localStorage.getItem('token');
+        return !!token;
+    };
 
-  useEffect(() => {
-    setIsLoggedIn(isAuthenticated());
-  }, []);
-
-  const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
-  };
-
-  const handleLogout = () => {
-    logout();
-    setIsLoggedIn(false);
-  };
-
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {isLoggedIn ? (
-        <Products onLogout={handleLogout} />
-      ) : (
-        <Login onLoginSuccess={handleLoginSuccess} />
-      )}
-    </ThemeProvider>
-  );
+    return (
+        <Router>
+            <div className="App">
+                <Routes>
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route
+                        path="/dashboard"
+                        element={
+                            isAuthenticated() ? (
+                                <Dashboard />
+                            ) : (
+                                <Navigate to="/login" />
+                            )
+                        }
+                    />
+                    <Route
+                        path="/"
+                        element={
+                            isAuthenticated() ? (
+                                <Navigate to="/dashboard" />
+                            ) : (
+                                <Navigate to="/login" />
+                            )
+                        }
+                    />
+                </Routes>
+            </div>
+        </Router>
+    );
 }
 
 export default App; 
