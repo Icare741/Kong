@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const app = express();
@@ -15,7 +14,6 @@ app.use(express.json());
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     
-    // Ici, vous devriez vérifier les credentials dans votre base de données
     // Pour l'exemple, nous utilisons des valeurs en dur
     if (username === 'admin' && password === 'password') {
         const token = jwt.sign(
