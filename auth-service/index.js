@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
+const amqp = require('amqplib');
 require('dotenv').config();
 
 const app = express();
@@ -15,6 +16,23 @@ const pool = new Pool({
     database: process.env.DB_NAME || 'auth',
     port: 5432
 });
+
+// Configuration RabbitMQ
+let channel;
+const RABBITMQ_URL = 'amqp://admin:admin@rabbitmq:5672';
+const USER_CREATED_QUEUE = 'user_created';
+
+// Initialisation de RabbitMQ
+async function initRabbitMQ() {
+    try {
+        const connection = await amqp.connect(RABBITMQ_URL);
+        channel = await connection.createChannel();
+        await channel.assertQueue(USER_CREATED_QUEUE);
+        console.log('Connecté à RabbitMQ');
+    } catch (error) {
+        console.error('Erreur de connexion à RabbitMQ:', error);
+    }
+}
 
 // Middleware
 app.use(cors());
@@ -41,9 +59,23 @@ app.post('/auth/register', async (req, res) => {
             [email, password]
         );
         
+        const newUser = result.rows[0];
+        
+        // Publier un message RabbitMQ
+        if (channel) {
+            await channel.sendToQueue(
+                USER_CREATED_QUEUE,
+                Buffer.from(JSON.stringify({
+                    userId: newUser.id,
+                    email: newUser.email,
+                    timestamp: new Date().toISOString()
+                }))
+            );
+        }
+        
         res.status(201).json({
             message: 'Utilisateur créé avec succès',
-            user: result.rows[0]
+            user: newUser
         });
     } catch (error) {
         console.error('Erreur lors de l\'inscription:', error);
@@ -99,6 +131,9 @@ app.post('/auth/verify', (req, res) => {
         res.status(401).json({ message: 'Token invalide' });
     }
 });
+
+// Initialiser RabbitMQ au démarrage
+initRabbitMQ();
 
 app.listen(PORT, () => {
     console.log(`Serveur d'authentification démarré sur le port ${PORT}`);

@@ -1,16 +1,22 @@
 {
   "name": "products-service",
   "version": "1.0.0",
+  "description": "Service de gestion des produits",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
+    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "dotenv": "^16.0.3",
+    "amqplib": "^0.10.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }

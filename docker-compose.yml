@@ -68,6 +68,8 @@ services:
     depends_on:
       auth-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   # Service des produits
   products-service:
@@ -77,6 +79,28 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=development
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # Port AMQP
+      - "15672:15672" # Port de l'interface web
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
-  auth_data: 
+  auth_data:
+  rabbitmq_data: 
